@@ -1,0 +1,166 @@
+*{
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+}
+
+.container{
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(60deg, #006687, #e7e7e7 ,rgb(23, 23, 167));
+    padding: 10px;
+}
+.box{
+    background-color: white;
+    width: 100%;
+    max-width: 540px;
+    margin: 100px auto 20px;
+    padding: 40px 30px 70px;
+    border-radius: 10px;
+}
+.box h3{
+    color: rgb(30, 30, 127);
+}
+.input{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #edeef0;
+    border-radius: 30px;
+    padding-left: 20px;
+    margin-bottom: 25px;
+    margin-top: 20px;
+}
+.search-bar{
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 10px;
+}
+
+.button{
+    border: none;
+    outline: none;
+    padding: 16px 50px;
+    background: #ff5945;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 40px;
+}
+
+ul li{
+    list-style: none;
+    font-size: 14px;
+    padding: 12px 8px 12px 50px;
+    user-select: none;
+    cursor: pointer;
+    position: relative;
+}
+
+ul li::before{
+    content: '';
+    position: absolute;
+    height: 26px;
+    width: 26px;
+    border-radius: 50%;
+    background-image: url(images/unchecked.png);
+    background-size: cover;
+    background-position: center;
+    left: 10px;
+    margin: -6px 4px;
+}
+
+ul li.checked{
+    color: #555;
+    text-decoration: line-through;
+}
+ul li.checked::before{
+    background-image: url(images/checked.png);
+}
+
+.error {
+    animation: shake 0.1s linear 10;
+}
+
+@keyframes shake {
+    0% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-2px);
+    }
+
+    50% {
+        transform: translateX(0);
+    }
+
+    75% {
+        transform: translateX(2px);
+    }
+
+    100% {
+        transform: translateX(0);
+    }
+}
+
+ul li span{
+    position: absolute;
+    right: 0;
+    top: 5px;
+    width: 40px;
+    height: 40px;
+    font-size: 22px;
+    color: #555;
+    line-height: 40px;
+    text-align: center;
+    border-radius: 50%;
+}
+
+ul li span:hover{
+    background: #edeef0;
+}
+
+.down{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.bi{
+    width: 118px;
+    height: 30px;
+    cursor: pointer;
+    color: black;
+    margin-top: 15px;
+}
+
+.bi:hover {
+    transform: scale(1.1);
+}
+
+@media (max-width : 500px){
+    .box{
+        margin-top: 77%;
+        width: 90%;
+    }
+    
+    .input{
+        width: 100%;
+    }
+
+    .search-bar{
+        width: 167px;
+    }
+
+    .button{
+        width: 100px;
+    }
+
+    .box h3{
+        font-size: 96%;
+    }
+}
