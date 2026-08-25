@@ -19,19 +19,19 @@ pipeline {
 
         stage('Install') {
             steps {
-                sh 'npm install'
+                bat 'npm install'
             }
         }
 
         stage('Lint') {
             steps {
-                sh 'npm run lint'
+                bat 'npm run lint'
             }
         }
 
         stage('Archive') {
             steps {
-                sh 'zip -r to-do-list.zip index.html script.js style.css images'
+                bat 'zip -r to-do-list.zip index.html script.js style.css images'
                 archiveArtifacts artifacts: 'to-do-list.zip', fingerprint: true
             }
         }
