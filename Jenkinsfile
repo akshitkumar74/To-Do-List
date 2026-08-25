@@ -35,6 +35,17 @@ pipeline {
                 archiveArtifacts artifacts: 'to-do-list.zip', fingerprint: true
             }
         }
+
+        stage('Deploy') {
+            when {
+                branch 'main'
+            }
+            steps {
+                withCredentials([string(credentialsId: 'netlify-token', variable: 'NETLIFY_AUTH_TOKEN')]) {
+                    bat 'npx --yes netlify-cli deploy --prod --dir=. --auth=%NETLIFY_AUTH_TOKEN% --site=dd49b7aa-30bd-40a9-be21-c75bf195a08c'
+                }
+            }
+        }
     }
 
     post {
