@@ -1,0 +1,11 @@
+{
+  "extends": "stylelint-config-standard",
+  "rules": {
+    "no-descending-specificity": null,
+    "font-family-name-quotes": null,
+    "color-function-notation": null,
+    "function-url-quotes": null,
+    "media-feature-range-notation": null,
+    "rule-empty-line-before": null
+  }
+}

@@ -1,6 +1,7 @@
 const searchbar = document.getElementById("searchbar");
 const taskcontainer = document.getElementById("taskcontainer");
 
+// eslint-disable-next-line no-unused-vars -- called from the onclick attribute in index.html
 function addTask(){
     if(searchbar.value === ''){
         searchbar.classList.add('error');
