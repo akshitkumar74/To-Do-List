@@ -60,5 +60,15 @@ pipeline {
         always {
             cleanWs()
         }
+        success {
+            mail to: 'akshitchoudhary7409@gmail.com',
+                 subject: "✅ Build Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Build successful!\n\nCheck details: ${env.BUILD_URL}"
+        }
+        failure {
+            mail to: 'akshitchoudhary7409@gmail.com',
+                 subject: "❌ Build Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "Build failed!\n\nCheck details: ${env.BUILD_URL}"
+        }
     }
 }
