@@ -38,8 +38,13 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                withCredentials([string(credentialsId: 'netlify-token', variable: 'NETLIFY_AUTH_TOKEN')]) {
-                    bat 'npx --yes netlify-cli deploy --prod --dir=. --auth=%NETLIFY_AUTH_TOKEN% --site=dd49b7aa-30bd-40a9-be21-c75bf195a08c'
+                withCredentials([string(credentialsId: 'vercel-token', variable: 'VERCEL_TOKEN')]) {
+                    withEnv([
+                        'VERCEL_ORG_ID=team_9sZCT5UF0EVbDMjUGLMKvz2Y',
+                        'VERCEL_PROJECT_ID=prj_aXVzh8MAd9TiqfBy1DAdhACJqfkv'
+                    ]) {
+                        bat 'npx --yes vercel --prod --token=%VERCEL_TOKEN% --yes'
+                    }
                 }
             }
         }
