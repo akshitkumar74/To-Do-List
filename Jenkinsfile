@@ -29,6 +29,12 @@ pipeline {
             }
         }
 
+        stage('Test') {
+    steps {
+        bat 'npm test'
+    }
+}
+
         stage('Archive') {
             steps {
                 bat 'powershell -NoProfile -Command "Compress-Archive -Path index.html,script.js,style.css,images -DestinationPath to-do-list.zip -Force"'

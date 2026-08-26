@@ -39,3 +39,7 @@ function showTask(){
     taskcontainer.innerHTML = localStorage.getItem("data");
 }
 showTask();
+// Ye sirf testing ke liye hai, browser mein koi effect nahi padega
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { addTask, saveData, showTask };
+}
