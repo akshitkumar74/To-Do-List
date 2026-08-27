@@ -12,7 +12,7 @@ function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
             }),
         },
         from: jest.fn((table) => {
-            const state = { isInsert: false, insertedRow: null, ids: [] };
+            const state = { isInsert: false, insertedRow: null, isSingle: false, eqValue: null };
             const builder = {
                 insert: jest.fn((rows) => {
                     insertMock(rows);
@@ -21,24 +21,22 @@ function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
                     return builder;
                 }),
                 select: jest.fn(() => builder),
-                eq: jest.fn(() => builder),
-                in: jest.fn((column, ids) => {
-                    state.ids = ids;
+                eq: jest.fn((column, value) => {
+                    state.eqValue = value;
                     return builder;
                 }),
                 update: jest.fn(() => builder),
                 delete: jest.fn(() => builder),
-                single: jest.fn(() => builder),
+                single: jest.fn(() => {
+                    state.isSingle = true;
+                    return builder;
+                }),
                 then: (resolve) => {
                     if (state.isInsert) {
                         resolve({ data: [state.insertedRow], error: null });
-                    } else if (table === 'profiles' && state.ids.length > 0) {
-                        resolve({
-                            data: state.ids
-                                .filter(id => profilesById[id])
-                                .map(id => ({ id, full_name: profilesById[id] })),
-                            error: null,
-                        });
+                    } else if (table === 'profiles' && state.isSingle) {
+                        const fullName = profilesById[state.eqValue];
+                        resolve({ data: fullName ? { full_name: fullName } : null, error: null });
                     } else {
                         resolve({ data: [], error: null });
                     }
@@ -99,13 +97,13 @@ describe('To-Do List functions', () => {
         expect(searchbar.value).toBe('');
     });
 
-    test('task add hone par Supabase ko correct user_id/task_name ke sath insert call jana chahiye', async () => {
+    test('task add hone par Supabase ko correct user_id/task_name/full_name ke sath insert call jana chahiye', async () => {
         const searchbar = document.getElementById('searchbar');
         searchbar.value = 'Read book';
         await addTask();
 
         expect(insertMock).toHaveBeenCalledWith([
-            { user_id: 'user-123', task_name: 'Read book', is_completed: false },
+            { user_id: 'user-123', task_name: 'Read book', is_completed: false, full_name: 'Akshit Kumar' },
         ]);
     });
 

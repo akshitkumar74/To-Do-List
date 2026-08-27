@@ -1,6 +1,8 @@
 const searchbar = document.getElementById("searchbar");
 const taskcontainer = document.getElementById("taskcontainer");
 
+let currentUserFullName = null;
+
 // eslint-disable-next-line no-unused-vars -- called from the onclick attribute in todo.html
 async function addTask(){
     if(searchbar.value === ''){
@@ -14,9 +16,13 @@ async function addTask(){
     const { data: sessionData } = await supabaseClient.auth.getSession();
     const userId = sessionData.session.user.id;
 
+    if (!currentUserFullName) {
+        currentUserFullName = await getCurrentUserFullName(userId);
+    }
+
     const { data, error } = await supabaseClient
         .from('tasks')
-        .insert([{ user_id: userId, task_name: searchbar.value, is_completed: false }])
+        .insert([{ user_id: userId, task_name: searchbar.value, is_completed: false, full_name: currentUserFullName }])
         .select();
 
     if (error) {
@@ -28,38 +34,35 @@ async function addTask(){
         return;
     }
 
-    const creatorNames = await getCreatorNames([userId]);
-    renderTask(data[0], creatorNames[userId]);
+    renderTask(data[0]);
     searchbar.value = "";
 }
 
-async function getCreatorNames(userIds){
-    const uniqueIds = [...new Set(userIds)];
-    if (uniqueIds.length === 0) return {};
-
+async function getCurrentUserFullName(userId){
     const { data, error } = await supabaseClient
         .from('profiles')
-        .select('id, full_name')
-        .in('id', uniqueIds);
+        .select('full_name')
+        .eq('id', userId)
+        .single();
 
     if (error) {
-        console.error("Failed to load task creators:", error.message);
-        return {};
+        console.error("Failed to load user info:", error.message);
+        return null;
     }
 
-    return Object.fromEntries(data.map(profile => [profile.id, profile.full_name]));
+    return data ? data.full_name : null;
 }
 
-function renderTask(task, creatorName){
+function renderTask(task){
     let li = document.createElement("li");
     li.innerHTML = task.task_name;
     li.dataset.id = task.id;
     if (task.is_completed) li.classList.add("checked");
 
-    if (creatorName) {
+    if (task.full_name) {
         let creator = document.createElement("small");
         creator.className = "task-creator";
-        creator.textContent = "Added by: " + creatorName;
+        creator.textContent = "Added by: " + task.full_name;
         li.appendChild(creator);
     }
 
@@ -103,10 +106,8 @@ async function showTask(){
         return;
     }
 
-    const creatorNames = await getCreatorNames(data.map(task => task.user_id));
-
     taskcontainer.innerHTML = "";
-    data.forEach(task => renderTask(task, creatorNames[task.user_id]));
+    data.forEach(task => renderTask(task));
 }
 
 async function showUserInfo(){
@@ -117,19 +118,9 @@ async function showUserInfo(){
     const userId = sessionData.session && sessionData.session.user.id;
     if(!userId) return;
 
-    const { data, error } = await supabaseClient
-        .from('profiles')
-        .select('full_name')
-        .eq('id', userId)
-        .single();
-
-    if (error) {
-        console.error("Failed to load user info:", error.message);
-        return;
-    }
-
-    if(data){
-        userInfo.textContent = data.full_name;
+    currentUserFullName = await getCurrentUserFullName(userId);
+    if (currentUserFullName) {
+        userInfo.textContent = currentUserFullName;
     }
 }
 
@@ -150,5 +141,5 @@ const ready = (async function init(){
 })();
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { addTask, renderTask, showTask, showUserInfo, checkSession, getCreatorNames, ready };
+    module.exports = { addTask, renderTask, showTask, showUserInfo, checkSession, getCurrentUserFullName, ready };
 }
