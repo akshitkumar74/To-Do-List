@@ -28,15 +28,41 @@ async function addTask(){
         return;
     }
 
-    renderTask(data[0]);
+    const creatorNames = await getCreatorNames([userId]);
+    renderTask(data[0], creatorNames[userId]);
     searchbar.value = "";
 }
 
-function renderTask(task){
+async function getCreatorNames(userIds){
+    const uniqueIds = [...new Set(userIds)];
+    if (uniqueIds.length === 0) return {};
+
+    const { data, error } = await supabaseClient
+        .from('profiles')
+        .select('id, full_name')
+        .in('id', uniqueIds);
+
+    if (error) {
+        console.error("Failed to load task creators:", error.message);
+        return {};
+    }
+
+    return Object.fromEntries(data.map(profile => [profile.id, profile.full_name]));
+}
+
+function renderTask(task, creatorName){
     let li = document.createElement("li");
     li.innerHTML = task.task_name;
     li.dataset.id = task.id;
     if (task.is_completed) li.classList.add("checked");
+
+    if (creatorName) {
+        let creator = document.createElement("small");
+        creator.className = "task-creator";
+        creator.textContent = "Added by: " + creatorName;
+        li.appendChild(creator);
+    }
+
     taskcontainer.appendChild(li);
     let span = document.createElement("span");
     span.innerHTML = "×";
@@ -77,8 +103,10 @@ async function showTask(){
         return;
     }
 
+    const creatorNames = await getCreatorNames(data.map(task => task.user_id));
+
     taskcontainer.innerHTML = "";
-    data.forEach(task => renderTask(task));
+    data.forEach(task => renderTask(task, creatorNames[task.user_id]));
 }
 
 async function showUserInfo(){
@@ -122,5 +150,5 @@ const ready = (async function init(){
 })();
 
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { addTask, renderTask, showTask, showUserInfo, checkSession, ready };
+    module.exports = { addTask, renderTask, showTask, showUserInfo, checkSession, getCreatorNames, ready };
 }

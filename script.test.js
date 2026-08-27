@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 
-function createSupabaseMock() {
+function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
     const insertMock = jest.fn();
 
     const client = {
@@ -11,8 +11,8 @@ function createSupabaseMock() {
                 data: { session: { user: { id: 'user-123' } } },
             }),
         },
-        from: jest.fn(() => {
-            const state = { isInsert: false, insertedRow: null };
+        from: jest.fn((table) => {
+            const state = { isInsert: false, insertedRow: null, ids: [] };
             const builder = {
                 insert: jest.fn((rows) => {
                     insertMock(rows);
@@ -22,12 +22,23 @@ function createSupabaseMock() {
                 }),
                 select: jest.fn(() => builder),
                 eq: jest.fn(() => builder),
+                in: jest.fn((column, ids) => {
+                    state.ids = ids;
+                    return builder;
+                }),
                 update: jest.fn(() => builder),
                 delete: jest.fn(() => builder),
                 single: jest.fn(() => builder),
                 then: (resolve) => {
                     if (state.isInsert) {
                         resolve({ data: [state.insertedRow], error: null });
+                    } else if (table === 'profiles' && state.ids.length > 0) {
+                        resolve({
+                            data: state.ids
+                                .filter(id => profilesById[id])
+                                .map(id => ({ id, full_name: profilesById[id] })),
+                            error: null,
+                        });
                     } else {
                         resolve({ data: [], error: null });
                     }
@@ -96,5 +107,14 @@ describe('To-Do List functions', () => {
         expect(insertMock).toHaveBeenCalledWith([
             { user_id: 'user-123', task_name: 'Read book', is_completed: false },
         ]);
+    });
+
+    test('task ke sath uska creator naam (Added by) dikhna chahiye', async () => {
+        const searchbar = document.getElementById('searchbar');
+        searchbar.value = 'Read book';
+        await addTask();
+
+        const items = document.querySelectorAll('#taskcontainer li');
+        expect(items[0].querySelector('.task-creator').textContent).toBe('Added by: Akshit Kumar');
     });
 });

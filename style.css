@@ -98,6 +98,14 @@ ul li.checked::before{
     background-image: url(images/checked.png);
 }
 
+.task-creator{
+    display: block;
+    font-size: 11px;
+    color: #999;
+    margin-top: 3px;
+    text-decoration: none;
+}
+
 .error {
     animation: shake 0.1s linear 10;
 }
