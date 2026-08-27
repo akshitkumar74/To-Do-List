@@ -19,9 +19,16 @@ async function addTask(){
         .insert([{ user_id: userId, task_name: searchbar.value, is_completed: false }])
         .select();
 
-    if (!error) {
-        renderTask(data[0]);
+    if (error) {
+        console.error("Failed to add task:", error.message);
+        searchbar.classList.add('error');
+        setTimeout(()=>{
+            searchbar.classList.remove('error');
+        },1000);
+        return;
     }
+
+    renderTask(data[0]);
     searchbar.value = "";
 }
 
@@ -41,12 +48,17 @@ taskcontainer.addEventListener("click", async function(e){
         e.target.classList.toggle("checked");
         const taskId = e.target.dataset.id;
         const isCompleted = e.target.classList.contains("checked");
-        await supabaseClient.from('tasks').update({ is_completed: isCompleted }).eq('id', taskId);
+        const { error } = await supabaseClient.from('tasks').update({ is_completed: isCompleted }).eq('id', taskId);
+        if (error) console.error("Failed to update task:", error.message);
     }
     else if(e.target.tagName === "SPAN"){
         const li = e.target.parentElement;
         const taskId = li.dataset.id;
-        await supabaseClient.from('tasks').delete().eq('id', taskId);
+        const { error } = await supabaseClient.from('tasks').delete().eq('id', taskId);
+        if (error) {
+            console.error("Failed to delete task:", error.message);
+            return;
+        }
         li.remove();
     }
 }, false);
@@ -60,10 +72,13 @@ async function showTask(){
         .select('*')
         .eq('user_id', userId);
 
-    if (!error) {
-        taskcontainer.innerHTML = "";
-        data.forEach(task => renderTask(task));
+    if (error) {
+        console.error("Failed to load tasks:", error.message);
+        return;
     }
+
+    taskcontainer.innerHTML = "";
+    data.forEach(task => renderTask(task));
 }
 
 async function showUserInfo(){
@@ -80,7 +95,12 @@ async function showUserInfo(){
         .eq('id', userId)
         .single();
 
-    if(!error && data){
+    if (error) {
+        console.error("Failed to load user info:", error.message);
+        return;
+    }
+
+    if(data){
         userInfo.textContent = data.full_name;
     }
 }
