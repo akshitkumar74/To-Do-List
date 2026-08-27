@@ -38,8 +38,16 @@ function saveData(){
 function showTask(){
     taskcontainer.innerHTML = localStorage.getItem("data");
 }
+function showUserInfo(){
+    const userInfo = document.getElementById("userInfo");
+    const currentUser = JSON.parse(localStorage.getItem("todoAppCurrentUser") || "null");
+    if(userInfo && currentUser && currentUser.name){
+        userInfo.textContent = currentUser.name;
+    }
+}
 showTask();
+showUserInfo();
 // Ye sirf testing ke liye hai, browser mein koi effect nahi padega
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { addTask, saveData, showTask };
+    module.exports = { addTask, saveData, showTask, showUserInfo };
 }

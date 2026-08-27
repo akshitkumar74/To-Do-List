@@ -5,6 +5,23 @@
     box-sizing: border-box;
 }
 
+.user-info{
+    position: fixed;
+    top: 15px;
+    right: 20px;
+    background: rgba(255, 255, 255, 90%);
+    padding: 8px 18px;
+    border-radius: 20px;
+    color: rgb(30, 30, 127);
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 10;
+}
+
+.user-info:empty{
+    display: none;
+}
+
 .container{
     width: 100%;
     min-height: 100vh;
