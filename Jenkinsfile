@@ -37,7 +37,7 @@ pipeline {
 
         stage('Archive') {
             steps {
-                bat 'powershell -NoProfile -Command "Compress-Archive -Path index.html,todo.html,auth.js,auth.css,script.js,style.css,images -DestinationPath to-do-list.zip -Force"'
+                bat 'powershell -NoProfile -Command "Compress-Archive -Path index.html,todo.html,auth.js,auth.css,supabaseClient.js,script.js,style.css,images -DestinationPath to-do-list.zip -Force"'
                 archiveArtifacts artifacts: 'to-do-list.zip', fingerprint: true
             }
         }

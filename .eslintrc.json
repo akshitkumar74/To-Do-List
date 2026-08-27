@@ -10,6 +10,9 @@
     "ecmaVersion": "latest",
     "sourceType": "script"
   },
+  "globals": {
+    "supabaseClient": "readonly"
+  },
   "extends": "eslint:recommended",
   "rules": {}
 }

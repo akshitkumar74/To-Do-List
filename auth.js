@@ -8,27 +8,35 @@ const formTitle = document.getElementById("formTitle");
 const formSubtitle = document.getElementById("formSubtitle");
 const authMessage = document.getElementById("authMessage");
 
-const USERS_KEY = "todoAppUsers";
-const SESSION_KEY = "todoAppCurrentUser";
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// Placeholder storage until a real backend/database is wired up.
-function getUsers() {
-    return JSON.parse(localStorage.getItem(USERS_KEY) || "[]");
+async function registerUser(fullName, age, email, password) {
+    const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+    if (error) {
+        return { success: false, message: error.message };
+    }
+
+    const userId = data.user.id;
+    const { error: profileError } = await supabaseClient
+        .from('profiles')
+        .insert([{ id: userId, full_name: fullName, age: age, email: email }]);
+
+    if (profileError) {
+        return { success: false, message: profileError.message };
+    }
+
+    return { success: true, message: "Account created successfully. Please login." };
 }
 
-function saveUser(user) {
-    const users = getUsers();
-    users.push(user);
-    localStorage.setItem(USERS_KEY, JSON.stringify(users));
-}
+async function loginUser(email, password) {
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
-function findUser(email, password) {
-    return getUsers().find(u => u.email === email && u.password === password);
-}
+    if (error) {
+        return { success: false, message: error.message };
+    }
 
-function emailExists(email) {
-    return getUsers().some(u => u.email === email);
+    return { success: true };
 }
 
 function showMessage(text, type) {
@@ -76,7 +84,7 @@ showLogin.addEventListener("click", function (e) {
     switchToLogin();
 });
 
-registerForm.addEventListener("submit", function (e) {
+registerForm.addEventListener("submit", async function (e) {
     e.preventDefault();
     clearMessage();
 
@@ -117,20 +125,20 @@ registerForm.addEventListener("submit", function (e) {
         showMessage("Passwords do not match.", "error");
         return;
     }
-    if (emailExists(email)) {
+    const result = await registerUser(name, age, email, password);
+    if (!result.success) {
         markError(emailInput);
-        showMessage("An account with this email already exists.", "error");
+        showMessage(result.message, "error");
         return;
     }
 
-    saveUser({ name, age, email, password });
     registerForm.reset();
     switchToLogin();
     document.getElementById("loginEmail").value = email;
-    showMessage("Account created successfully. Please login.", "success");
+    showMessage(result.message, "success");
 });
 
-loginForm.addEventListener("submit", function (e) {
+loginForm.addEventListener("submit", async function (e) {
     e.preventDefault();
     clearMessage();
 
@@ -139,13 +147,12 @@ loginForm.addEventListener("submit", function (e) {
     const email = emailInput.value.trim().toLowerCase();
     const password = passwordInput.value;
 
-    const user = findUser(email, password);
-    if (!user) {
+    const result = await loginUser(email, password);
+    if (!result.success) {
         markError(passwordInput);
-        showMessage("Invalid email or password.", "error");
+        showMessage(result.message, "error");
         return;
     }
 
-    localStorage.setItem(SESSION_KEY, JSON.stringify({ name: user.name, email: user.email }));
     window.location.href = "todo.html";
 });
