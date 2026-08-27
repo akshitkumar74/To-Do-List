@@ -4,6 +4,8 @@
 
 function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
     const insertMock = jest.fn();
+    const updateMock = jest.fn();
+    const deleteMock = jest.fn();
 
     const client = {
         auth: {
@@ -25,8 +27,14 @@ function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
                     state.eqValue = value;
                     return builder;
                 }),
-                update: jest.fn(() => builder),
-                delete: jest.fn(() => builder),
+                update: jest.fn((payload) => {
+                    updateMock(payload);
+                    return builder;
+                }),
+                delete: jest.fn(() => {
+                    deleteMock();
+                    return builder;
+                }),
                 single: jest.fn(() => {
                     state.isSingle = true;
                     return builder;
@@ -46,12 +54,14 @@ function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
         }),
     };
 
-    return { client, insertMock };
+    return { client, insertMock, updateMock, deleteMock };
 }
 
 describe('To-Do List functions', () => {
     let addTask;
     let insertMock;
+    let updateMock;
+    let deleteMock;
 
     beforeEach(async () => {
         document.body.innerHTML = `
@@ -62,6 +72,8 @@ describe('To-Do List functions', () => {
         const mock = createSupabaseMock();
         global.supabaseClient = mock.client;
         insertMock = mock.insertMock;
+        updateMock = mock.updateMock;
+        deleteMock = mock.deleteMock;
 
         jest.resetModules();
         const scriptModule = require('./script.js');
@@ -114,5 +126,21 @@ describe('To-Do List functions', () => {
 
         const items = document.querySelectorAll('#taskcontainer li');
         expect(items[0].querySelector('.task-creator').textContent).toBe('Added by: Akshit Kumar');
+    });
+
+    test('× dabane par task UI se hat jani chahiye, aur row delete hone ki jagah is_deleted=true set hona chahiye', async () => {
+        const searchbar = document.getElementById('searchbar');
+        searchbar.value = 'Temporary task';
+        await addTask();
+
+        const span = document.querySelector('#taskcontainer li span');
+        span.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(document.querySelectorAll('#taskcontainer li').length).toBe(0);
+        expect(updateMock).toHaveBeenCalledWith({ is_deleted: true });
+        expect(deleteMock).not.toHaveBeenCalled();
     });
 });

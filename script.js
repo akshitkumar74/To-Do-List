@@ -83,7 +83,7 @@ taskcontainer.addEventListener("click", async function(e){
     else if(e.target.tagName === "SPAN"){
         const li = e.target.parentElement;
         const taskId = li.dataset.id;
-        const { error } = await supabaseClient.from('tasks').delete().eq('id', taskId);
+        const { error } = await supabaseClient.from('tasks').update({ is_deleted: true }).eq('id', taskId);
         if (error) {
             console.error("Failed to delete task:", error.message);
             return;
@@ -99,7 +99,8 @@ async function showTask(){
     const { data, error } = await supabaseClient
         .from('tasks')
         .select('*')
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .eq('is_deleted', false);
 
     if (error) {
         console.error("Failed to load tasks:", error.message);

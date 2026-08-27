@@ -12,6 +12,8 @@ create table public.tasks (
   user_id uuid references auth.users on delete cascade not null,
   task_name text not null,
   is_completed boolean default false,
+  is_deleted boolean default false,
+  full_name text,
   created_at timestamptz default now()
 );
 
@@ -26,3 +28,6 @@ create policy "Users can insert own profile" on public.profiles
 
 create policy "Users can manage own tasks" on public.tasks
   for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Migration: soft delete for tasks (run this if the tasks table already exists)
+alter table public.tasks add column if not exists is_deleted boolean default false;
