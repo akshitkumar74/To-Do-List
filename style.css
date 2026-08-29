@@ -5,21 +5,75 @@
     box-sizing: border-box;
 }
 
-.user-info{
+.account-widget{
     position: fixed;
-    top: 15px;
+    top: 20px;
     right: 20px;
-    background: rgba(255, 255, 255, 90%);
-    padding: 8px 18px;
-    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 95%);
+    padding: 6px 10px 6px 6px;
+    border-radius: 30px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 15%);
+    z-index: 10;
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.account-widget.visible{
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.avatar{
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #006687, rgb(23, 23, 167));
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.user-name{
     color: rgb(30, 30, 127);
     font-size: 14px;
     font-weight: 600;
-    z-index: 10;
+    white-space: nowrap;
 }
 
-.user-info:empty{
-    display: none;
+.logout-button{
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: #999;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.logout-button svg{
+    width: 16px;
+    height: 16px;
+}
+
+.logout-button:hover{
+    background: #fdeceb;
+    color: #ff5945;
 }
 
 .container{

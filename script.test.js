@@ -7,11 +7,14 @@ function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
     const updateMock = jest.fn();
     const deleteMock = jest.fn();
 
+    const signOutMock = jest.fn().mockResolvedValue({ error: null });
+
     const client = {
         auth: {
             getSession: jest.fn().mockResolvedValue({
                 data: { session: { user: { id: 'user-123' } } },
             }),
+            signOut: signOutMock,
         },
         from: jest.fn((table) => {
             const state = { isInsert: false, insertedRow: null, isSingle: false, eqValue: null };
@@ -54,7 +57,7 @@ function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
         }),
     };
 
-    return { client, insertMock, updateMock, deleteMock };
+    return { client, insertMock, updateMock, deleteMock, signOutMock };
 }
 
 describe('To-Do List functions', () => {
@@ -62,11 +65,13 @@ describe('To-Do List functions', () => {
     let insertMock;
     let updateMock;
     let deleteMock;
+    let signOutMock;
 
     beforeEach(async () => {
         document.body.innerHTML = `
             <input id="searchbar" />
             <ul id="taskcontainer"></ul>
+            <button id="logoutBtn"></button>
         `;
 
         const mock = createSupabaseMock();
@@ -74,6 +79,7 @@ describe('To-Do List functions', () => {
         insertMock = mock.insertMock;
         updateMock = mock.updateMock;
         deleteMock = mock.deleteMock;
+        signOutMock = mock.signOutMock;
 
         jest.resetModules();
         const scriptModule = require('./script.js');
@@ -142,5 +148,14 @@ describe('To-Do List functions', () => {
         expect(document.querySelectorAll('#taskcontainer li').length).toBe(0);
         expect(updateMock).toHaveBeenCalledWith({ is_deleted: true });
         expect(deleteMock).not.toHaveBeenCalled();
+    });
+
+    test('Logout button dabane par supabase signOut call hona chahiye', async () => {
+        const logoutBtn = document.getElementById('logoutBtn');
+        logoutBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(signOutMock).toHaveBeenCalled();
     });
 });

@@ -122,7 +122,21 @@ async function showUserInfo(){
     currentUserFullName = await getCurrentUserFullName(userId);
     if (currentUserFullName) {
         userInfo.textContent = currentUserFullName;
+
+        const avatar = document.getElementById("avatarInitial");
+        if (avatar) avatar.textContent = currentUserFullName.charAt(0).toUpperCase();
+
+        const accountWidget = document.getElementById("accountWidget");
+        if (accountWidget) accountWidget.classList.add("visible");
     }
+}
+
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+    logoutBtn.addEventListener("click", async function(){
+        await supabaseClient.auth.signOut();
+        window.location.href = "index.html";
+    });
 }
 
 async function checkSession(){
