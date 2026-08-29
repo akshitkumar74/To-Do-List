@@ -35,6 +35,12 @@ pipeline {
     }
 }
 
+        stage('Security Scan') {
+            steps {
+                bat 'trivy fs --include-dev-deps --exit-code 0 --severity HIGH,CRITICAL .'
+            }
+        }
+
         stage('Archive') {
             steps {
                 bat 'powershell -NoProfile -Command "Compress-Archive -Path index.html,todo.html,auth.js,auth.css,supabaseClient.js,script.js,style.css,images -DestinationPath to-do-list.zip -Force"'
