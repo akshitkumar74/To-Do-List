@@ -37,7 +37,7 @@ pipeline {
 
         stage('Security Scan') {
             steps {
-                bat 'trivy fs --include-dev-deps --exit-code 0 --severity HIGH,CRITICAL .'
+                bat 'trivy fs --include-dev-deps --exit-code 1 --severity HIGH,CRITICAL .'
             }
         }
 
