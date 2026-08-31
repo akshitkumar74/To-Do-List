@@ -6,8 +6,8 @@ function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
     const insertMock = jest.fn();
     const updateMock = jest.fn();
     const deleteMock = jest.fn();
-
     const signOutMock = jest.fn().mockResolvedValue({ error: null });
+    const forceError = { insert: null, update: null, select: null, single: null };
 
     const client = {
         auth: {
@@ -17,7 +17,7 @@ function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
             signOut: signOutMock,
         },
         from: jest.fn((table) => {
-            const state = { isInsert: false, insertedRow: null, isSingle: false, eqValue: null };
+            const state = { isInsert: false, isUpdate: false, insertedRow: null, isSingle: false, eqValue: null };
             const builder = {
                 insert: jest.fn((rows) => {
                     insertMock(rows);
@@ -32,6 +32,7 @@ function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
                 }),
                 update: jest.fn((payload) => {
                     updateMock(payload);
+                    state.isUpdate = true;
                     return builder;
                 }),
                 delete: jest.fn(() => {
@@ -44,11 +45,29 @@ function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
                 }),
                 then: (resolve) => {
                     if (state.isInsert) {
+                        if (forceError.insert) {
+                            resolve({ data: null, error: { message: forceError.insert } });
+                            return;
+                        }
                         resolve({ data: [state.insertedRow], error: null });
                     } else if (table === 'profiles' && state.isSingle) {
+                        if (forceError.single) {
+                            resolve({ data: null, error: { message: forceError.single } });
+                            return;
+                        }
                         const fullName = profilesById[state.eqValue];
                         resolve({ data: fullName ? { full_name: fullName } : null, error: null });
+                    } else if (state.isUpdate) {
+                        if (forceError.update) {
+                            resolve({ data: null, error: { message: forceError.update } });
+                            return;
+                        }
+                        resolve({ data: [], error: null });
                     } else {
+                        if (table === 'tasks' && forceError.select) {
+                            resolve({ data: null, error: { message: forceError.select } });
+                            return;
+                        }
                         resolve({ data: [], error: null });
                     }
                 },
@@ -57,7 +76,7 @@ function createSupabaseMock(profilesById = { 'user-123': 'Akshit Kumar' }) {
         }),
     };
 
-    return { client, insertMock, updateMock, deleteMock, signOutMock };
+    return { client, insertMock, updateMock, deleteMock, signOutMock, forceError };
 }
 
 describe('To-Do List functions', () => {
@@ -66,6 +85,7 @@ describe('To-Do List functions', () => {
     let updateMock;
     let deleteMock;
     let signOutMock;
+    let forceError;
 
     beforeEach(async () => {
         document.body.innerHTML = `
@@ -80,6 +100,7 @@ describe('To-Do List functions', () => {
         updateMock = mock.updateMock;
         deleteMock = mock.deleteMock;
         signOutMock = mock.signOutMock;
+        forceError = mock.forceError;
 
         jest.resetModules();
         const scriptModule = require('./script.js');
@@ -87,7 +108,7 @@ describe('To-Do List functions', () => {
         addTask = scriptModule.addTask;
     });
 
-    test('empty searchbar par error class lagni chahiye', async () => {
+    test('empty searchbar should get the error class', async () => {
         const searchbar = document.getElementById('searchbar');
         searchbar.value = '';
         await addTask();
@@ -97,7 +118,7 @@ describe('To-Do List functions', () => {
         expect(items.length).toBe(0);
     });
 
-    test('valid input dene par task list mein add hona chahiye', async () => {
+    test('valid input should be added to the task list', async () => {
         const searchbar = document.getElementById('searchbar');
         searchbar.value = 'Buy milk';
         await addTask();
@@ -107,7 +128,7 @@ describe('To-Do List functions', () => {
         expect(items[0].textContent).toContain('Buy milk');
     });
 
-    test('task add karne ke baad searchbar khali ho jana chahiye', async () => {
+    test('searchbar should be cleared after adding a task', async () => {
         const searchbar = document.getElementById('searchbar');
         searchbar.value = 'Clean house';
         await addTask();
@@ -115,7 +136,7 @@ describe('To-Do List functions', () => {
         expect(searchbar.value).toBe('');
     });
 
-    test('task add hone par Supabase ko correct user_id/task_name/full_name ke sath insert call jana chahiye', async () => {
+    test('adding a task should call Supabase insert with correct user_id/task_name/full_name', async () => {
         const searchbar = document.getElementById('searchbar');
         searchbar.value = 'Read book';
         await addTask();
@@ -125,7 +146,7 @@ describe('To-Do List functions', () => {
         ]);
     });
 
-    test('task ke sath uska creator naam (Added by) dikhna chahiye', async () => {
+    test('task should show its creator name (Added by)', async () => {
         const searchbar = document.getElementById('searchbar');
         searchbar.value = 'Read book';
         await addTask();
@@ -134,7 +155,33 @@ describe('To-Do List functions', () => {
         expect(items[0].querySelector('.task-creator').textContent).toBe('Added by: Akshit Kumar');
     });
 
-    test('× dabane par task UI se hat jani chahiye, aur row delete hone ki jagah is_deleted=true set hona chahiye', async () => {
+    test('failed task insert should show error class and not add to the list', async () => {
+        const searchbar = document.getElementById('searchbar');
+        searchbar.value = 'Should fail';
+        forceError.insert = 'insert blocked';
+
+        await addTask();
+
+        expect(searchbar.classList.contains('error')).toBe(true);
+        expect(document.querySelectorAll('#taskcontainer li').length).toBe(0);
+    });
+
+    test('clicking the checkbox (LI) should toggle the checked class and call is_completed update', async () => {
+        const searchbar = document.getElementById('searchbar');
+        searchbar.value = 'Toggle me';
+        await addTask();
+
+        const li = document.querySelector('#taskcontainer li');
+        li.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(li.classList.contains('checked')).toBe(true);
+        expect(updateMock).toHaveBeenCalledWith({ is_completed: true });
+    });
+
+    test('clicking × should remove the task from the UI, setting is_deleted=true instead of deleting the row', async () => {
         const searchbar = document.getElementById('searchbar');
         searchbar.value = 'Temporary task';
         await addTask();
@@ -150,7 +197,23 @@ describe('To-Do List functions', () => {
         expect(deleteMock).not.toHaveBeenCalled();
     });
 
-    test('Logout button dabane par supabase signOut call hona chahiye', async () => {
+    test('a failed delete request should not remove the task from the UI', async () => {
+        const searchbar = document.getElementById('searchbar');
+        searchbar.value = 'Cannot delete';
+        await addTask();
+
+        forceError.update = 'RLS blocked';
+
+        const span = document.querySelector('#taskcontainer li span');
+        span.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+        await Promise.resolve();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        expect(document.querySelectorAll('#taskcontainer li').length).toBe(1);
+    });
+
+    test('clicking the Logout button should call supabase signOut', async () => {
         const logoutBtn = document.getElementById('logoutBtn');
         logoutBtn.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
         await Promise.resolve();
@@ -158,4 +221,81 @@ describe('To-Do List functions', () => {
 
         expect(signOutMock).toHaveBeenCalled();
     });
+
+    test('a failed profile fetch should still add the task, with full_name null', async () => {
+        document.body.innerHTML = `
+            <input id="searchbar" />
+            <ul id="taskcontainer"></ul>
+        `;
+
+        const mock = createSupabaseMock();
+        mock.forceError.single = 'profile lookup failed';
+        global.supabaseClient = mock.client;
+
+        jest.resetModules();
+        const scriptModule = require('./script.js');
+        await scriptModule.ready;
+
+        const searchbar = document.getElementById('searchbar');
+        searchbar.value = 'No profile';
+        await scriptModule.addTask();
+
+        expect(mock.insertMock).toHaveBeenCalledWith([
+            { user_id: 'user-123', task_name: 'No profile', is_completed: false, full_name: null },
+        ]);
+    });
+
+    test('a failed tasks fetch should leave the list empty', async () => {
+        document.body.innerHTML = `
+            <input id="searchbar" />
+            <ul id="taskcontainer"></ul>
+        `;
+
+        const mock = createSupabaseMock();
+        mock.forceError.select = 'tasks fetch failed';
+        global.supabaseClient = mock.client;
+
+        jest.resetModules();
+        const scriptModule = require('./script.js');
+        await scriptModule.ready;
+
+        expect(document.querySelectorAll('#taskcontainer li').length).toBe(0);
+    });
+
+    test('with no session, tasks/profile should never be fetched (redirect guard)', async () => {
+        document.body.innerHTML = `
+            <input id="searchbar" />
+            <ul id="taskcontainer"></ul>
+        `;
+
+        const mock = createSupabaseMock();
+        mock.client.auth.getSession = jest.fn().mockResolvedValue({ data: { session: null } });
+        global.supabaseClient = mock.client;
+
+        jest.resetModules();
+        const scriptModule = require('./script.js');
+        await scriptModule.ready;
+
+        expect(mock.client.from).not.toHaveBeenCalled();
+    });
+
+    test('after login, the user name and avatar should show in the UI', async () => {
+        document.body.innerHTML = `
+            <input id="searchbar" />
+            <ul id="taskcontainer"></ul>
+            <div id="accountWidget"><div id="avatarInitial"></div><span id="userInfo"></span></div>
+        `;
+
+        const mock = createSupabaseMock();
+        global.supabaseClient = mock.client;
+
+        jest.resetModules();
+        const scriptModule = require('./script.js');
+        await scriptModule.ready;
+
+        expect(document.getElementById('userInfo').textContent).toBe('Akshit Kumar');
+        expect(document.getElementById('avatarInitial').textContent).toBe('A');
+        expect(document.getElementById('accountWidget').classList.contains('visible')).toBe(true);
+    });
+    
 });

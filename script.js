@@ -6,7 +6,7 @@ let currentUserFullName = null;
 // eslint-disable-next-line no-unused-vars -- called from the onclick attribute in todo.html
 async function addTask(){
     if(searchbar.value === ''){
-        searchbar.classList.add('error');
+        // searchbar.classList.add('error');
         setTimeout(()=>{
             searchbar.classList.remove('error');
         },1000);

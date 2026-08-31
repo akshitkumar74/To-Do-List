@@ -8,7 +8,7 @@
     "lint:css": "stylelint \"*.css\"",
     "lint:js": "eslint \"*.js\"",
     "lint": "npm run lint:html && npm run lint:css && npm run lint:js",
-    "test": "jest"
+    "test": "jest --coverage"
   },
   "devDependencies": {
     "eslint": "^8.57.0",
@@ -19,6 +19,14 @@
     "stylelint-config-standard": "^36.0.1"
   },
   "jest": {
-    "testEnvironment": "jsdom"
+    "testEnvironment": "jsdom",
+    "coverageThreshold": {
+      "global": {
+        "branches": 60,
+        "functions": 60,
+        "lines": 60,
+        "statements": 60
+      }
+    }
   }
 }
