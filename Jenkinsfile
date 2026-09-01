@@ -41,6 +41,14 @@ pipeline {
             }
         }
 
+        stage('SonarCloud Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'sonarcloud-token', variable: 'SONAR_TOKEN')]) {
+                    bat 'npx --yes sonarqube-scanner -Dsonar.organization=akshitkumar74 -Dsonar.projectKey=akshitkumar74_To-Do-List -Dsonar.sources=. -Dsonar.host.url=https://sonarcloud.io -Dsonar.token=%SONAR_TOKEN%'
+                }
+            }
+        }
+
         stage('Docker Build') {
             steps {
                 bat 'docker build -t to-do-list-app:%BUILD_NUMBER% .'
