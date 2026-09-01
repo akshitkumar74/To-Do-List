@@ -41,6 +41,12 @@ pipeline {
             }
         }
 
+        stage('Docker Build') {
+            steps {
+                bat 'docker build -t to-do-list-app:%BUILD_NUMBER% .'
+            }
+        }
+
         stage('Archive') {
             steps {
                 bat 'powershell -NoProfile -Command "Compress-Archive -Path index.html,todo.html,auth.js,auth.css,supabaseClient.js,script.js,style.css,images -DestinationPath to-do-list.zip -Force"'
