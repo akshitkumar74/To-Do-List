@@ -27,4 +27,4 @@ $metricsFile = 'zap-metrics.prom'
 Write-Host "Pushing metrics to Pushgateway:"
 Write-Host $payload
 
-curl.exe -s --data-binary "@$metricsFile" "http://localhost:9091/metrics/job/zap/instance/jenkins-todo-list-zap-$buildNumber"
+curl.exe -s --data-binary "@$metricsFile" "http://localhost:9091/metrics/job/zap/instance/jenkins-todo-list-zap"

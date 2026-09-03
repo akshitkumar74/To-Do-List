@@ -27,4 +27,4 @@ $metricsFile = 'trivy-metrics.prom'
 Write-Host "Pushing metrics to Pushgateway:"
 Write-Host $payload
 
-curl.exe -s --data-binary "@$metricsFile" "http://localhost:9091/metrics/job/trivy/instance/jenkins-todo-list-$buildNumber"
+curl.exe -s --data-binary "@$metricsFile" "http://localhost:9091/metrics/job/trivy/instance/jenkins-todo-list"
