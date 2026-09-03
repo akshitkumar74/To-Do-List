@@ -1,8 +1,14 @@
 node_modules/
 *.zip
+coverage/
 
 # Local Netlify folder
 .netlify
 
 .vercel
 .env*
+
+# CI-generated scan reports
+trivy-report.json
+trivy-metrics.prom
+zap-report.html
