@@ -12,3 +12,5 @@ coverage/
 trivy-report.json
 trivy-metrics.prom
 zap-report.html
+zap-report.json
+zap-metrics.prom

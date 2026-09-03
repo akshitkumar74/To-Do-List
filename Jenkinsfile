@@ -83,7 +83,8 @@ pipeline {
         stage('OWASP ZAP Scan') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
-                    bat 'docker run -t -v "%WORKSPACE%:/zap/wrk/:rw" zaproxy/zap-stable zap-baseline.py -t https://to-do-list-chi-eight-59.vercel.app -r zap-report.html'
+                    bat 'docker run -t -v "%WORKSPACE%:/zap/wrk/:rw" zaproxy/zap-stable zap-baseline.py -t https://to-do-list-chi-eight-59.vercel.app -r zap-report.html -J zap-report.json'
+                    bat 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\push-zap-metrics.ps1'
                 }
                 archiveArtifacts artifacts: 'zap-report.html', allowEmptyArchive: true, fingerprint: true
             }

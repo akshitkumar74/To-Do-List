@@ -16,7 +16,7 @@ $severities = @('CRITICAL', 'HIGH', 'MEDIUM', 'LOW')
 
 $lines = @('# TYPE trivy_vulnerabilities_total gauge')
 foreach ($severity in $severities) {
-    $count = ($vulnerabilities | Where-Object { $_.Severity -eq $severity }).Count
+    $count = @($vulnerabilities | Where-Object { $_.Severity -eq $severity }).Count
     $lines += "trivy_vulnerabilities_total{severity=`"$severity`",build_number=`"$buildNumber`"} $count"
 }
 
