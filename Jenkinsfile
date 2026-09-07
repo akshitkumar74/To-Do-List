@@ -40,7 +40,9 @@ pipeline {
                 catchError(buildResult: 'SUCCESS', stageResult: 'SUCCESS') {
                     bat 'trivy fs --include-dev-deps --format json --output trivy-report.json .'
                     bat 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\push-trivy-metrics.ps1'
+                    bat 'trivy fs --include-dev-deps --format template --template "@scripts/trivy-html.tpl" -o trivy-report.html .'
                 }
+                archiveArtifacts artifacts: 'trivy-report.html', allowEmptyArchive: true, fingerprint: true
 
                 bat 'trivy fs --include-dev-deps --exit-code 1 --severity HIGH,CRITICAL .'
             }

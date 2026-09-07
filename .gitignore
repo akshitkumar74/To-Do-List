@@ -10,6 +10,7 @@ coverage/
 
 # CI-generated scan reports
 trivy-report.json
+trivy-report.html
 trivy-metrics.prom
 zap-report.html
 zap-report.json
