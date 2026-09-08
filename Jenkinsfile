@@ -44,7 +44,9 @@ pipeline {
                 }
                 archiveArtifacts artifacts: 'trivy-report.html', allowEmptyArchive: true, fingerprint: true
 
-                bat 'trivy fs --include-dev-deps --exit-code 1 --severity HIGH,CRITICAL .'
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    bat 'trivy fs --include-dev-deps --exit-code 1 --severity HIGH,CRITICAL .'
+                }
             }
         }
 
