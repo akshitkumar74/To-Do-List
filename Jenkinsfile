@@ -109,6 +109,7 @@ pipeline {
                         curl -s -X POST "http://localhost:8082/api/v2/reimport-scan/" ^
                           -H "Authorization: Token %DD_API_KEY%" ^
                           -F "engagement=1" ^
+                          -F "product_name=To-Do-List" ^
                           -F "scan_type=Trivy Scan" ^
                           -F "file=@trivy-report.json" ^
                           -F "minimum_severity=Info" ^
@@ -119,6 +120,7 @@ pipeline {
                         curl -s -X POST "http://localhost:8082/api/v2/reimport-scan/" ^
                           -H "Authorization: Token %DD_API_KEY%" ^
                           -F "engagement=1" ^
+                          -F "product_name=To-Do-List" ^
                           -F "scan_type=ZAP Scan" ^
                           -F "file=@zap-report.json" ^
                           -F "minimum_severity=Info" ^
