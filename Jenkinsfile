@@ -128,7 +128,8 @@ pipeline {
                           -F "minimum_severity=Info" ^
                           -F "active=true" ^
                           -F "verified=false" ^
-                          -F "close_old_findings=true"
+                          -F "close_old_findings=true" ^
+                          -F "auto_create_context=true"
                     '''
                 }
             }
