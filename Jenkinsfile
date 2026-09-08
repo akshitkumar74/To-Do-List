@@ -86,7 +86,7 @@ pipeline {
             steps {
                 script {
                     def zapExitCode = bat(
-                        script: 'docker run -t -v "%WORKSPACE%:/zap/wrk/:rw" zaproxy/zap-stable zap-baseline.py -t https://to-do-list-chi-eight-59.vercel.app -r zap-report.html -J zap-report.json',
+                        script: 'docker run -t -v "%WORKSPACE%:/zap/wrk/:rw" zaproxy/zap-stable zap-baseline.py -t https://to-do-list-chi-eight-59.vercel.app -r zap-report.html -J zap-report.json -x zap-report.xml',
                         returnStatus: true
                     )
                     if (zapExitCode != 0) {
@@ -124,7 +124,7 @@ pipeline {
                           -F "product_name=To-Do-List" ^
                           -F "engagement_name=Trivy-ZAP-Scan-01" ^
                           -F "scan_type=ZAP Scan" ^
-                          -F "file=@zap-report.json" ^
+                          -F "file=@zap-report.xml" ^
                           -F "minimum_severity=Info" ^
                           -F "active=true" ^
                           -F "verified=false" ^
