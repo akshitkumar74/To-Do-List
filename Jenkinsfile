@@ -101,6 +101,34 @@ pipeline {
                 archiveArtifacts artifacts: 'zap-report.html', allowEmptyArchive: true, fingerprint: true
             }
         }
+
+        stage('DefectDojo Import') {
+            steps {
+                withCredentials([string(credentialsId: 'defectdojo-api-key', variable: 'DD_API_KEY')]) {
+                    bat '''
+                        curl -s -X POST "http://localhost:8082/api/v2/reimport-scan/" ^
+                          -H "Authorization: Token %DD_API_KEY%" ^
+                          -F "engagement=1" ^
+                          -F "scan_type=Trivy Scan" ^
+                          -F "file=@trivy-report.json" ^
+                          -F "minimum_severity=Info" ^
+                          -F "active=true" ^
+                          -F "verified=false" ^
+                          -F "close_old_findings=true"
+
+                        curl -s -X POST "http://localhost:8082/api/v2/reimport-scan/" ^
+                          -H "Authorization: Token %DD_API_KEY%" ^
+                          -F "engagement=1" ^
+                          -F "scan_type=ZAP Scan" ^
+                          -F "file=@zap-report.json" ^
+                          -F "minimum_severity=Info" ^
+                          -F "active=true" ^
+                          -F "verified=false" ^
+                          -F "close_old_findings=true"
+                    '''
+                }
+            }
+        }
     }
 
     post {
