@@ -58,6 +58,14 @@ pipeline {
             }
         }
 
+        stage('Fetch SonarCloud Findings') {
+            steps {
+                withCredentials([string(credentialsId: 'sonarcloud-fetch-token', variable: 'SONAR_FETCH_TOKEN')]) {
+                    bat 'powershell -NoProfile -ExecutionPolicy Bypass -File scripts\\fetch-sonar-findings.ps1 -SonarToken %SONAR_FETCH_TOKEN%'
+                }
+            }
+        }
+
         stage('Docker Build') {
             steps {
                 bat 'docker build -t to-do-list-app:%BUILD_NUMBER% .'
@@ -134,14 +142,15 @@ pipeline {
                           -F "auto_create_context=true"
                         
                         curl -s -X POST "http://localhost:8082/api/v2/import-scan/" ^
-                        -H "Authorization: Token %DD_API_KEY%" ^
-                        -F "scan_type=SonarQube API Import" ^
-                        -F "engagement=1" ^
-                        -F "product_name=To-Do-List" ^
-                        -F "engagement_name=Trivy-ZAP-Scan-01" ^
-                        -F "api_scan_configuration=<CONFIG_ID>" ^
-                        -F "active=true" ^
-                        -F "verified=false"
+                          -H "Authorization: Token %DD_API_KEY%" ^
+                          -F "engagement=1" ^
+                          -F "product_name=To-Do-List" ^
+                          -F "engagement_name=Trivy-ZAP-Scan-01" ^
+                          -F "scan_type=Generic Findings Import" ^
+                          -F "file=@sonar-findings.json" ^
+                          -F "minimum_severity=Info" ^
+                          -F "active=true" ^
+                          -F "verified=false"
                     '''
                 }
             }
