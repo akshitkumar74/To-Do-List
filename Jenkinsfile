@@ -132,6 +132,16 @@ pipeline {
                           -F "verified=false" ^
                           -F "close_old_findings=true" ^
                           -F "auto_create_context=true"
+                        
+                        curl -s -X POST "http://localhost:8082/api/v2/import-scan/" ^
+                        -H "Authorization: Token %DD_API_KEY%" ^
+                        -F "scan_type=SonarQube API Import" ^
+                        -F "engagement=1" ^
+                        -F "product_name=To-Do-List" ^
+                        -F "engagement_name=Trivy-ZAP-Scan-01" ^
+                        -F "api_scan_configuration=<CONFIG_ID>" ^
+                        -F "active=true" ^
+                        -F "verified=false"
                     '''
                 }
             }
