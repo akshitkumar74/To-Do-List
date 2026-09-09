@@ -160,6 +160,9 @@ pipeline {
     post {
         always {
             cleanWs()
+            script {
+                currentBuild.description = "<a href='http://localhost:8082/engagement/1' target='_blank' rel='noopener noreferrer'>View DefectDojo Dashboard</a>"
+            }
         }
         success {
             mail to: 'akshitchoudhary7409@gmail.com',
